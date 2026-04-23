@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Offline Rhyme Finder</title>
+<meta charset="UTF-8" />
+<title>Rhyme Finder (Offline CMUdict)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
   margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: #e2e8f0;
-  font-family: sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -19,44 +19,51 @@ body {
 
 .container {
   width: 600px;
-  padding: 25px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 20px;
+  padding: 24px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.06);
   backdrop-filter: blur(10px);
 }
 
 h1 {
   text-align: center;
+  margin-bottom: 16px;
 }
 
 input {
   width: 70%;
-  padding: 12px;
+  padding: 10px;
   border-radius: 10px;
   border: none;
-  margin-right: 10px;
+  outline: none;
 }
 
 button {
-  padding: 12px;
-  border-radius: 10px;
+  padding: 10px 14px;
   border: none;
+  border-radius: 10px;
   background: #3b82f6;
   color: white;
   cursor: pointer;
 }
 
+#status {
+  margin-top: 12px;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
 .results {
-  margin-top: 20px;
+  margin-top: 16px;
   max-height: 300px;
   overflow-y: auto;
 }
 
 .word {
-  padding: 6px;
+  padding: 6px 10px;
   margin: 4px 0;
   background: rgba(255,255,255,0.08);
-  border-radius: 6px;
+  border-radius: 8px;
 }
 </style>
 </head>
@@ -64,21 +71,24 @@ button {
 <body>
 
 <div class="container">
-  <h1>Offline Rhyme Finder</h1>
-  <input id="input" placeholder="Enter word...">
+  <h1>Rhyme Finder</h1>
+
+  <input id="input" placeholder="Enter a word..." />
   <button onclick="findRhymes()">Find</button>
-  <div id="status"></div>
+
+  <div id="status">Loading...</div>
   <div class="results" id="results"></div>
 </div>
+
 <script>
-  let dict = {};
+
+let dict = {};
 let rhymeMap = {};
 
-document.getElementById("status").textContent = "Loading dictionary...";
-
+// Load dictionary
 fetch("./cmudict.txt")
   .then(res => {
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    if (!res.ok) throw new Error("Failed to load cmudict.txt");
     return res.text();
   })
   .then(text => {
@@ -91,9 +101,10 @@ fetch("./cmudict.txt")
   .catch(err => {
     console.error(err);
     document.getElementById("status").textContent =
-      "Dictionary failed to load";
+      "Error loading dictionary";
   });
 
+// Parse CMUdict
 function parseDict(text) {
   const lines = text.split("\n");
 
@@ -106,16 +117,17 @@ function parseDict(text) {
     let word = parts[0].replace(/\(\d+\)/, "");
     const phonemes = parts.slice(1);
 
-    const rhymePart = getRhymePart(phonemes);
+    const rhymeKey = getRhymeKey(phonemes);
 
-    dict[word] = rhymePart;
+    dict[word] = rhymeKey;
 
-    if (!rhymeMap[rhymePart]) rhymeMap[rhymePart] = [];
-    rhymeMap[rhymePart].push(word);
+    if (!rhymeMap[rhymeKey]) rhymeMap[rhymeKey] = [];
+    rhymeMap[rhymeKey].push(word);
   }
 }
 
-function getRhymePart(phonemes) {
+// Get rhyme signature
+function getRhymeKey(phonemes) {
   for (let i = phonemes.length - 1; i >= 0; i--) {
     if (/[0-2]/.test(phonemes[i])) {
       return phonemes.slice(i).join("-");
@@ -123,6 +135,41 @@ function getRhymePart(phonemes) {
   }
   return phonemes.slice(-2).join("-");
 }
+
+// Find rhymes
+function findRhymes() {
+  const input = document.getElementById("input").value.trim().toUpperCase();
+  const results = document.getElementById("results");
+  const status = document.getElementById("status");
+
+  results.innerHTML = "";
+
+  if (!dict[input]) {
+    status.textContent = "Word not found in dictionary";
+    return;
+  }
+
+  const key = dict[input];
+  const list = rhymeMap[key] || [];
+
+  status.textContent = list.length + " rhymes found";
+
+  for (let w of list) {
+    if (w === input) continue;
+
+    const div = document.createElement("div");
+    div.className = "word";
+    div.textContent = w;
+    results.appendChild(div);
+  }
+}
+
+// Enter key support
+document.getElementById("input").addEventListener("keypress", e => {
+  if (e.key === "Enter") findRhymes();
+});
+
 </script>
+
 </body>
 </html>
