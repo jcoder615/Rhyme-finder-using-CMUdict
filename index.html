@@ -122,7 +122,7 @@ function getRhymePart(phonemes) {
 }
 
 function findRhymes() {
-  const input = document.getElementById("input").value.toLowerCase();
+const input = document.getElementById("input").value.trim().toUpperCase();
   const resultsDiv = document.getElementById("results");
   const status = document.getElementById("status");
 
