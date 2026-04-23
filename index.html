@@ -91,14 +91,13 @@ function parseDict(text) {
   for (let line of lines) {
     if (!line || line.startsWith(";;;")) continue;
 
-    const parts = line.trim().split("  ");
+    const parts = line.trim().split(/\s+/);
     if (parts.length < 2) continue;
 
-   let word = parts[0].replace(/\(\d+\)/, "");
-    word = word.replace(/\(\d+\)/, ""); // remove alt pronunciations
+    // remove alternate pronunciation markers like WORD(1)
+    let word = parts[0].replace(/\(\d+\)/, "");
 
-    const phonemes = parts[1].split(" ");
-
+    const phonemes = parts.slice(1);
     const rhymePart = getRhymePart(phonemes);
 
     dict[word] = rhymePart;
@@ -106,6 +105,12 @@ function parseDict(text) {
     if (!rhymeMap[rhymePart]) {
       rhymeMap[rhymePart] = [];
     }
+
+    rhymeMap[rhymePart].push(word);
+  }
+
+  console.log("Loaded words:", Object.keys(dict).length);
+}
 
     rhymeMap[rhymePart].push(word);
   }
