@@ -114,12 +114,10 @@ function parseDict(text) {
     const parts = line.trim().split(/\s+/);
     if (parts.length < 2) continue;
 
-    let word = parts[0].replace(/\(\d+\)/, "");
+    let word = parts[0].replace(/\(\d+\)/, "").toUpperCase();
     const phonemes = parts.slice(1);
 
     const rhymeKey = getRhymeKey(phonemes);
-
-    dict[word] = rhymeKey;
 
     if (!rhymeMap[rhymeKey]) rhymeMap[rhymeKey] = [];
     rhymeMap[rhymeKey].push(word);
@@ -138,19 +136,38 @@ function getRhymeKey(phonemes) {
 
 // Find rhymes
 function findRhymes() {
-  const inputRaw = document.getElementById("input").value.trim().toUpperCase();
+  const input = document.getElementById("input").value.trim().toUpperCase();
   const results = document.getElementById("results");
   const status = document.getElementById("status");
 
   results.innerHTML = "";
 
-  // try direct match first
-  let key = dict[inputRaw];
+  // find ALL words that match rhyme of input word
+  let foundKey = null;
 
-  // fallback: strip punctuation variants manually
-  if (!key) {
-    const alt = inputRaw.replace(/[^A-Z]/g, "");
-    key = dict[alt];
+  for (let key in rhymeMap) {
+    if (rhymeMap[key].includes(input)) {
+      foundKey = key;
+      break;
+    }
+  }
+
+  if (!foundKey) {
+    status.textContent = "Word not found in dictionary";
+    return;
+  }
+
+  const list = rhymeMap[foundKey];
+
+  status.textContent = list.length + " rhymes found";
+
+  for (let w of list) {
+    if (w === input) continue;
+
+    const div = document.createElement("div");
+    div.className = "word";
+    div.textContent = w;
+    results.appendChild(div);
   }
 
   if (!key) {
