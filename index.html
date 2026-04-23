@@ -138,16 +138,39 @@ function getRhymeKey(phonemes) {
 
 // Find rhymes
 function findRhymes() {
-  const input = document.getElementById("input").value.trim().toUpperCase();
+  const inputRaw = document.getElementById("input").value.trim().toUpperCase();
   const results = document.getElementById("results");
   const status = document.getElementById("status");
 
   results.innerHTML = "";
 
-  if (!dict[input]) {
+  // try direct match first
+  let key = dict[inputRaw];
+
+  // fallback: strip punctuation variants manually
+  if (!key) {
+    const alt = inputRaw.replace(/[^A-Z]/g, "");
+    key = dict[alt];
+  }
+
+  if (!key) {
     status.textContent = "Word not found in dictionary";
     return;
   }
+
+  const list = rhymeMap[key] || [];
+
+  status.textContent = list.length + " rhymes found";
+
+  for (let w of list) {
+    if (w === inputRaw) continue;
+
+    const div = document.createElement("div");
+    div.className = "word";
+    div.textContent = w;
+    results.appendChild(div);
+  }
+}
 
   const key = dict[input];
   const list = rhymeMap[key] || [];
