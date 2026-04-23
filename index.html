@@ -154,9 +154,28 @@ const input = document.getElementById("input").value.trim().toUpperCase();
 }
 
 // Enter key support
-document.getElementById("input").addEventListener("keypress", e => {
-  if (e.key === "Enter") findRhymes();
-});
+document.getElementById("status").textContent = "Loading dictionary...";
+
+fetch("./cmudict.txt")
+  .then(res => {
+    if (!res.ok) {
+      throw new Error("HTTP error: " + res.status);
+    }
+    return res.text();
+  })
+  .then(text => {
+    document.getElementById("status").textContent = "Parsing dictionary...";
+
+    parseDict(text);
+
+    document.getElementById("status").textContent =
+      "Ready! Words loaded: " + Object.keys(dict).length;
+  })
+  .catch(err => {
+    console.error("DICT LOAD FAILED:", err);
+    document.getElementById("status").textContent =
+      "Dictionary failed to load (check console)";
+  });
 </script>
 
 </body>
