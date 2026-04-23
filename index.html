@@ -113,6 +113,7 @@ function parseDict(text) {
     if (!rhymeMap[rhymePart]) rhymeMap[rhymePart] = [];
     rhymeMap[rhymePart].push(word);
   }
+}
 
 function getRhymePart(phonemes) {
   for (let i = phonemes.length - 1; i >= 0; i--) {
@@ -122,33 +123,6 @@ function getRhymePart(phonemes) {
   }
   return phonemes.slice(-2).join("-");
 }
-
-function findRhymes() {
-  const input = document.getElementById("input").value.trim().toUpperCase();
-  document.getElementById("status").textContent = "You typed: " + input;
-}
-
-  const key = dict[input];
-  const list = rhymeMap[key] || [];
-
-  document.getElementById("status").textContent =
-    list.length + " rhymes found";
-
-  for (let w of list) {
-    if (w === input) continue;
-
-    const div = document.createElement("div");
-    div.className = "word";
-    div.textContent = w;
-    results.appendChild(div);
-  }
-}
-
-document.getElementById("input").addEventListener("keypress", e => {
-  if (e.key === "Enter") findRhymes();
-});
 </script>
-
-
 </body>
 </html>
