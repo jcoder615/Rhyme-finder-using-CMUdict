@@ -125,14 +125,8 @@ function getRhymePart(phonemes) {
 
 function findRhymes() {
   const input = document.getElementById("input").value.trim().toUpperCase();
-  const results = document.getElementById("results");
-
-  results.innerHTML = "";
-
-  if (!dict[input]) {
-    document.getElementById("status").textContent = "Word not found.";
-    return;
-  }
+  document.getElementById("status").textContent = "You typed: " + input;
+}
 
   const key = dict[input];
   const list = rhymeMap[key] || [];
